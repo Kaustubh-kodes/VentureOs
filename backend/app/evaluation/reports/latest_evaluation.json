@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-09-03T19:44:28.354842+00:00",
+  "evaluation_cases": 10,
+  "rag": {
+    "precision_at_5": 0.0,
+    "recall_at_5": 0.0,
+    "hit_rate_at_5": 0.0,
+    "mrr": 0.0
+  },
+  "agent_quality": {
+    "ceo": 1.0,
+    "market": 1.0,
+    "product": 1.0,
+    "marketing": 1.0,
+    "finance": 1.0,
+    "investment": 1.0,
+    "synthesis": 1.0
+  },
+  "grounding": {
+    "valid_evidence_count": 1,
+    "invalid_evidence_count": 0,
+    "grounding_rate": 1.0,
+    "assumptions_identified": 4
+  },
+  "regression": {
+    "status": "REGRESSION_DETECTED",
+    "checks_passed": [
+      "Average Agent Quality (1.00 >= 0.80)",
+      "Agent 'ceo' (1.00 >= 0.70)",
+      "Agent 'market' (1.00 >= 0.70)",
+      "Agent 'product' (1.00 >= 0.70)",
+      "Agent 'marketing' (1.00 >= 0.70)",
+      "Agent 'finance' (1.00 >= 0.70)",
+      "Agent 'investment' (1.00 >= 0.70)",
+      "Agent 'synthesis' (1.00 >= 0.70)",
+      "Zero unsupported source references (Grounding 100%)"
+    ],
+    "regressions": [
+      "RAG Precision@5 degraded: 0.00 < threshold 0.40",
+      "RAG HitRate@5 degraded: 0.00 < threshold 0.70",
+      "RAG MRR degraded: 0.00 < threshold 0.50"
+    ]
+  },
+  "overall_status": "WARN"
+}

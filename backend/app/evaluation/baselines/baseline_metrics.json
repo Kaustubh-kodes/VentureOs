@@ -1,0 +1,24 @@
+﻿{
+  "version": "1.0.0",
+  "updated_at": "2026-09-04T00:00:00Z",
+  "rag": {
+    "minimum_precision_at_5": 0.40,
+    "minimum_hit_rate_at_5": 0.70,
+    "minimum_mrr": 0.50,
+    "description": "Evaluates semantic context retrieval against expected topic identifiers in the founder knowledge base."
+  },
+  "agents": {
+    "minimum_average_quality_score": 0.80,
+    "minimum_single_agent_score": 0.70,
+    "description": "Calculated via deterministic structural, schema, and critical requirement pass-rates per agent."
+  },
+  "grounding": {
+    "max_unsupported_evidence_ratio": 0.05,
+    "description": "Maximum allowable proportion of claims marked as FOUNDER EVIDENCE without corresponding source documents."
+  },
+  "reliability": {
+    "max_failure_rate": 0.15,
+    "max_repair_attempts": 1,
+    "description": "Allowable non-critical agent failure tolerance with graceful pipeline synthesis continuation."
+  }
+}

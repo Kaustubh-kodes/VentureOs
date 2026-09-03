@@ -1,0 +1,236 @@
+﻿[
+  {
+    "id": "edtech_001",
+    "name": "AI Career Acceleration for College Seniors",
+    "startup_input": {
+      "startup_idea": "AI Resume & Career Coaching Platform for University Students that tailors job applications to ATS algorithms and provides mock behavioral interviews.",
+      "target_audience": "Undergraduate students, career service offices, and fresh college graduates",
+      "industry": "EdTech",
+      "budget": "Under $10,000",
+      "timeline": "1-3 months",
+      "notes": "Planning B2B university pilot with Career Services before launching direct-to-student subscription."
+    },
+    "retrieval_queries": [
+      {
+        "query": "university career services resume ATS market size students",
+        "expected_source_identifiers": ["pitch", "interview", "edtech", "career"]
+      }
+    ],
+    "expected_agent_checks": {
+      "ceo": ["executive_summary", "strategic_moat", "core_thesis"],
+      "market": ["target_customers", "tam_sam_som", "competitor_analysis"],
+      "product": ["mvp_features", "system_architecture", "differentiation"],
+      "marketing": ["acquisition_channels", "gtm_motion", "icp_persona"],
+      "finance": ["burn_rate", "unit_economics", "runway_months"],
+      "investment": ["investment_score", "investment_readiness", "major_risks"],
+      "synthesis": ["executive_summary", "investment_score", "conflicting_assessments"]
+    }
+  },
+  {
+    "id": "fintech_002",
+    "name": "Automated Invoice Factoring for SMBs",
+    "startup_input": {
+      "startup_idea": "Instant liquidity platform that connects to QuickBooks and advances cash against verified 30-90 day outstanding invoices with AI risk pricing.",
+      "target_audience": "Small B2B businesses, manufacturing subcontractors, logistics fleets",
+      "industry": "FinTech",
+      "budget": "$10,000-$50,000",
+      "timeline": "3-6 months",
+      "notes": "Requires debt facility partner or balance sheet syndicate to fund invoice advances."
+    },
+    "retrieval_queries": [
+      {
+        "query": "invoice factoring cash flow SMB credit risk underwriting",
+        "expected_source_identifiers": ["fintech", "underwriting", "financial", "credit"]
+      }
+    ],
+    "expected_agent_checks": {
+      "ceo": ["strategic_moat", "core_thesis"],
+      "finance": ["unit_economics", "cost_of_capital"],
+      "investment": ["major_risks", "credit_exposure"]
+    }
+  },
+  {
+    "id": "healthtech_003",
+    "name": "Remote Patient Monitoring for Chronic Kidney Disease",
+    "startup_input": {
+      "startup_idea": "Cellular-connected blood pressure and metabolic monitoring hub that alerts nephrologists to early markers of stage 3/4 kidney disease progression.",
+      "target_audience": "Nephrology practices, rural health systems, Medicare Advantage payers",
+      "industry": "HealthTech",
+      "budget": "$50,000+",
+      "timeline": "6-12 months",
+      "notes": "Targeting CMS remote physiologic monitoring reimbursement codes 99453 and 99454."
+    },
+    "retrieval_queries": [
+      {
+        "query": "remote patient monitoring CMS reimbursement codes nephrology",
+        "expected_source_identifiers": ["health", "reimbursement", "clinical", "fda"]
+      }
+    ],
+    "expected_agent_checks": {
+      "ceo": ["regulatory_pathway"],
+      "product": ["hipaa_compliance", "mvp_features"],
+      "investment": ["regulatory_risk"]
+    }
+  },
+  {
+    "id": "saas_004",
+    "name": "API Contract Drift & Breaking Change Detector",
+    "startup_input": {
+      "startup_idea": "CI/CD automated plugin that monitors OpenAPI and GraphQL schemas to detect breaking interface changes before deployment to production.",
+      "target_audience": "Engineering managers, backend developers, platform teams",
+      "industry": "SaaS",
+      "budget": "Under $10,000",
+      "timeline": "1-3 months",
+      "notes": "Open-source core CLI with paid team workspace cloud governance."
+    },
+    "retrieval_queries": [
+      {
+        "query": "developer tooling API schema drift CI CD openapi",
+        "expected_source_identifiers": ["devops", "api", "developer", "contract"]
+      }
+    ],
+    "expected_agent_checks": {
+      "product": ["integration_ecosystem", "mvp_features"],
+      "marketing": ["bottom_up_adoption", "devrel"],
+      "investment": ["developer_retention"]
+    }
+  },
+  {
+    "id": "ai_005",
+    "name": "Legal Redlining & Compliance Assistant",
+    "startup_input": {
+      "startup_idea": "LLM co-pilot trained on standard venture and commercial agreements that marks up indemnity, non-solicitation, and IP clauses in seconds.",
+      "target_audience": "In-house general counsels, boutique corporate law firms, startup founders",
+      "industry": "AI",
+      "budget": "$10,000-$50,000",
+      "timeline": "3-6 months",
+      "notes": "SOC2 compliance and zero-data-retention guarantee are strict requirements for corporate adoption."
+    },
+    "retrieval_queries": [
+      {
+        "query": "legal tech contract redlining enterprise compliance security",
+        "expected_source_identifiers": ["legal", "contract", "enterprise", "soc2"]
+      }
+    ],
+    "expected_agent_checks": {
+      "product": ["security_architecture", "mvp_features"],
+      "market": ["enterprise_sales_cycle"],
+      "investment": ["hallucination_liability"]
+    }
+  },
+  {
+    "id": "marketplace_006",
+    "name": "Peer-to-Peer Heavy Machinery Sharing",
+    "startup_input": {
+      "startup_idea": "Marketplace matching idle commercial excavators, bulldozers, and cranes with local general contractors needing short-term equipment.",
+      "target_audience": "Equipment leasing companies, civil construction contractors, equipment owners",
+      "industry": "Other",
+      "budget": "$50,000+",
+      "timeline": "6-12 months",
+      "notes": "Requires telematics tracking and insurance underwriting per rental."
+    },
+    "retrieval_queries": [
+      {
+        "query": "heavy equipment rental marketplace telematics insurance contractor",
+        "expected_source_identifiers": ["construction", "marketplace", "machinery", "insurance"]
+      }
+    ],
+    "expected_agent_checks": {
+      "market": ["supply_demand_liquidity", "take_rate"],
+      "finance": ["insurance_costs", "unit_economics"],
+      "investment": ["asset_damage_liability"]
+    }
+  },
+  {
+    "id": "consumer_007",
+    "name": "Gamified Habit Formation & Accountability Duels",
+    "startup_input": {
+      "startup_idea": "Social fitness and productivity app where friends stake small financial deposits that get donated to charity if daily habits are missed.",
+      "target_audience": "Young professionals, biohackers, marathon trainees, students",
+      "industry": "Other",
+      "budget": "Under $10,000",
+      "timeline": "1-3 months",
+      "notes": "Viral invite loops through TikTok and Instagram Reels."
+    },
+    "retrieval_queries": [
+      {
+        "query": "habit tracker social gamification loss aversion consumer retention",
+        "expected_source_identifiers": ["consumer", "gamification", "retention", "social"]
+      }
+    ],
+    "expected_agent_checks": {
+      "marketing": ["viral_coefficient", "cac_ltv"],
+      "product": ["gamification_loop"],
+      "investment": ["consumer_churn"]
+    }
+  },
+  {
+    "id": "cleantech_008",
+    "name": "Warehouse IoT Energy Optimization & Microgrid",
+    "startup_input": {
+      "startup_idea": "Industrial sensor network and automated HVAC/lighting scheduler that reduces cold storage warehouse electricity costs by 22%.",
+      "target_audience": "Logistics real estate REITs, 3PL operators, cold chain facilities",
+      "industry": "Other",
+      "budget": "$50,000+",
+      "timeline": "6-12 months",
+      "notes": "Hardware payback under 8 months with utility efficiency rebates."
+    },
+    "retrieval_queries": [
+      {
+        "query": "industrial cold storage energy efficiency IoT hvac optimization",
+        "expected_source_identifiers": ["energy", "industrial", "iot", "warehouse"]
+      }
+    ],
+    "expected_agent_checks": {
+      "finance": ["payback_period", "hardware_cogs"],
+      "market": ["sales_cycle_enterprise"],
+      "investment": ["hardware_installation_friction"]
+    }
+  },
+  {
+    "id": "logistics_009",
+    "name": "Hyperlocal Electric Cargo Bike Urban Network",
+    "startup_input": {
+      "startup_idea": "Zero-emission last-mile logistics service using custom quad cargo e-bikes operating out of container-based micro-hubs in urban centers.",
+      "target_audience": "E-commerce retailers, pharmaceutical distributors, luxury couriers",
+      "industry": "E-commerce",
+      "budget": "$10,000-$50,000",
+      "timeline": "3-6 months",
+      "notes": "Bypasses downtown traffic congestion and vehicle zero-emission zone fines."
+    },
+    "retrieval_queries": [
+      {
+        "query": "urban logistics cargo bike last mile micro hub delivery",
+        "expected_source_identifiers": ["logistics", "delivery", "urban", "fleet"]
+      }
+    ],
+    "expected_agent_checks": {
+      "product": ["fleet_dispatch_routing"],
+      "finance": ["cost_per_drop", "driver_compensation"],
+      "investment": ["weather_dependency", "capex_scale"]
+    }
+  },
+  {
+    "id": "cybersecurity_010",
+    "name": "Automated Cloud Identity Entitlement Management (CIEM)",
+    "startup_input": {
+      "startup_idea": "Agentless cloud scanner that audits AWS, GCP, and Azure IAM roles to detect excessive privileges and enforce least-privilege policies.",
+      "target_audience": "DevSecOps leads, CISOs, cloud security engineers at growth-stage startups",
+      "industry": "SaaS",
+      "budget": "$10,000-$50,000",
+      "timeline": "3-6 months",
+      "notes": "SOC2 and ISO27001 readiness automation drives initial enterprise purchasing."
+    },
+    "retrieval_queries": [
+      {
+        "query": "cloud security CIEM IAM least privilege aws gcp devsecops",
+        "expected_source_identifiers": ["cybersecurity", "cloud", "iam", "compliance"]
+      }
+    ],
+    "expected_agent_checks": {
+      "product": ["read_only_integration", "mvp_features"],
+      "market": ["competitive_landscape_wiz_orca"],
+      "investment": ["acquisitions_consolidation_risk"]
+    }
+  }
+]
