@@ -70,7 +70,7 @@ Configure in **Vercel Project Settings > Environment Variables**:
 
 | Variable Name | Description | Example / Target |
 |---|---|---|
-| `NEXT_PUBLIC_API_URL` | Public URL of the Railway backend | `https://your-backend.up.railway.app` |
+| `NEXT_PUBLIC_API_URL` | Public URL of the Railway backend | `https://capable-unity-production.up.railway.app` |
 
 ---
 
