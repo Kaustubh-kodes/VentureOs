@@ -1,4 +1,4 @@
-﻿# VentureOS — Production Deployment Guide
+# VentureOS — Production Deployment Guide
 
 This document outlines the exact production deployment architecture, configuration, and verification steps for VentureOS.
 
@@ -47,7 +47,7 @@ Configure these in the **Railway Dashboard > Service Settings > Variables**:
 | `SUPABASE_URL` | Supabase project URL | `https://your-project.supabase.co` |
 | `SUPABASE_KEY` | Supabase service role / anon key (**Backend Only**) | `sb_publishable_...` |
 | `CORS_ORIGINS` | Allowed frontend domains (JSON or comma-separated) | `["https://your-ventureos.vercel.app", "http://localhost:3000"]` |
-| `FRONTEND_URL` | Optional shorthand for production frontend | `https://your-ventureos.vercel.app` |
+| `FRONTEND_URL` | Optional shorthand for production frontend | `https://frontend-amber-ten-59.vercel.app` |
 
 > [!CAUTION]
 > **Never** expose `GEMINI_API_KEY` or `SUPABASE_KEY` to the client. These must exist **only** on the Railway backend service.
@@ -55,6 +55,8 @@ Configure these in the **Railway Dashboard > Service Settings > Variables**:
 ---
 
 ## 2. Frontend Deployment (Vercel)
+
+🌐 **Live Vercel Production URL:** [`https://frontend-amber-ten-59.vercel.app`](https://frontend-amber-ten-59.vercel.app)
 
 ### Project Configuration
 - **Root Directory**: `frontend`
