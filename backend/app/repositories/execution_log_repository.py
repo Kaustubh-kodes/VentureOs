@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from typing import List, Dict, Any, Optional
 from app.services.supabase_service import supabase_service
 
@@ -7,8 +7,9 @@ logger = logging.getLogger("ventureos.execution_log_repository")
 
 class ExecutionLogRepository:
     def __init__(self):
-        self.primary_table = "analysis_events"
-        self.fallback_table = "agent_execution_logs"
+        # agent_execution_logs is active in current Supabase schema; analysis_events is fallback
+        self.primary_table = "agent_execution_logs"
+        self.fallback_table = "analysis_events"
 
     def _client(self):
         return supabase_service.get_client()

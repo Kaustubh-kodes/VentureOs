@@ -79,6 +79,7 @@ async def start_multi_agent_pipeline(request: StartupAnalysisRequest, background
     """
     logger.info("Starting new multi-agent session for industry: %s", request.industry)
     session = session_repository.create_session(request)
+    agent_orchestrator.initialize_pipeline_records(session["id"])
     background_tasks.add_task(agent_orchestrator.run_full_pipeline, session["id"])
     return MultiAgentRunResponse(
         success=True,

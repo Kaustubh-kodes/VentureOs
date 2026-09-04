@@ -10,6 +10,8 @@ logger = logging.getLogger("ventureos.agent_output_repository")
 class AgentOutputRepository:
     def __init__(self):
         self.table_name = "agent_outputs"
+        # Schema timing columns (duration_ms, started_at, completed_at) are stored in output_json['_meta']
+        self._timing_columns_supported = False
 
     def _client(self):
         return supabase_service.get_client()
@@ -28,6 +30,13 @@ class AgentOutputRepository:
             raise
         except Exception as e:
             logger.error("Error creating agent output in Supabase: %s", str(e))
+            # If record already exists, attempt to retrieve and return it
+            try:
+                res = client.table(self.table_name).select("*").eq("session_id", output_in.session_id).eq("agent_name", output_in.agent_name).execute()
+                if res.data:
+                    return res.data[0]
+            except Exception:
+                pass
             raise HTTPException(status_code=500, detail=f"Database error creating agent output: {str(e)}")
 
     def update_agent_output(self, output_id: str, update_in: AgentOutputUpdate) -> Dict[str, Any]:
@@ -58,25 +67,39 @@ class AgentOutputRepository:
     ) -> Dict[str, Any]:
         """Update agent output by session_id and agent_name with duration and timestamp tracking."""
         client = self._client()
+
+        # Build _meta dictionary for timing and observability
+        meta_dict: Dict[str, Any] = {}
+        if duration_ms is not None:
+            meta_dict["duration_ms"] = duration_ms
+        if started_at is not None:
+            meta_dict["started_at"] = started_at
+        if completed_at is not None:
+            meta_dict["completed_at"] = completed_at
+
+        # Embed metadata inside output_json
+        final_output_json = output_json
+        if final_output_json is not None:
+            if meta_dict:
+                meta = final_output_json.setdefault("_meta", {})
+                meta.update(meta_dict)
+        elif meta_dict:
+            final_output_json = {"_meta": meta_dict}
+
         payload: Dict[str, Any] = {"status": status}
-        if output_json is not None:
-            if duration_ms is not None or started_at is not None or completed_at is not None:
-                meta = output_json.setdefault("_meta", {})
-                if duration_ms is not None:
-                    meta["duration_ms"] = duration_ms
-                if started_at is not None:
-                    meta["started_at"] = started_at
-                if completed_at is not None:
-                    meta["completed_at"] = completed_at
-            payload["output_json"] = output_json
+        if final_output_json is not None:
+            payload["output_json"] = final_output_json
         if error_message is not None:
             payload["error_message"] = error_message
-        if duration_ms is not None:
-            payload["duration_ms"] = duration_ms
-        if started_at is not None:
-            payload["started_at"] = started_at
-        if completed_at is not None:
-            payload["completed_at"] = completed_at
+
+        # If columns are supported in database schema, include them directly
+        if self._timing_columns_supported:
+            if duration_ms is not None:
+                payload["duration_ms"] = duration_ms
+            if started_at is not None:
+                payload["started_at"] = started_at
+            if completed_at is not None:
+                payload["completed_at"] = completed_at
 
         try:
             logger.info("Updating agent output for '%s' in session %s to status '%s'", agent_name, session_id, status)
@@ -93,7 +116,7 @@ class AgentOutputRepository:
                     session_id=session_id,
                     agent_name=agent_name,
                     status=status,
-                    output_json=output_json,
+                    output_json=final_output_json,
                     error_message=error_message,
                 )
                 return self.create_agent_output(new_record)
@@ -101,8 +124,10 @@ class AgentOutputRepository:
         except HTTPException:
             raise
         except Exception as e:
+            err_msg = str(e)
             # If duration_ms column not yet migrated in Supabase, strip and retry cleanly
-            if any(k in payload for k in ("duration_ms", "started_at", "completed_at")):
+            if any(k in payload for k in ("duration_ms", "started_at", "completed_at")) or "PGRST204" in err_msg:
+                self._timing_columns_supported = False
                 clean_payload = {k: v for k, v in payload.items() if k not in ("duration_ms", "started_at", "completed_at")}
                 try:
                     res = (
@@ -114,10 +139,19 @@ class AgentOutputRepository:
                     )
                     if res.data:
                         return res.data[0]
-                except Exception:
-                    pass
-            logger.error("Error updating agent output by session and agent: %s", str(e))
-            raise HTTPException(status_code=500, detail=f"Database error updating agent output: {str(e)}")
+                    logger.warning("No existing record found for agent '%s' in session %s during fallback, creating new record", agent_name, session_id)
+                    new_record = AgentOutputCreate(
+                        session_id=session_id,
+                        agent_name=agent_name,
+                        status=status,
+                        output_json=final_output_json,
+                        error_message=error_message,
+                    )
+                    return self.create_agent_output(new_record)
+                except Exception as inner_e:
+                    logger.error("Inner fallback error updating agent output: %s", str(inner_e))
+            logger.error("Error updating agent output by session and agent: %s", err_msg)
+            raise HTTPException(status_code=500, detail=f"Database error updating agent output: {err_msg}")
 
     def get_session_agent_outputs(self, session_id: str) -> List[Dict[str, Any]]:
         """Fetch all agent outputs for a session ordered by created_at."""

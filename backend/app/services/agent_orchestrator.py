@@ -1,4 +1,4 @@
-﻿import time
+import time
 import logging
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
@@ -19,6 +19,7 @@ from app.agents.synthesis_agent import synthesis_agent
 
 # Schemas
 from app.schemas.analysis import StartupAnalysisRequest
+from app.schemas.agent_output import AgentOutputCreate
 from app.schemas.multi_agent import (
     MultiAgentStatusResponse,
     AgentStatusInfo,
@@ -41,171 +42,209 @@ AGENT_DISPLAY_NAMES = {
 class AgentOrchestrator:
     AGENTS_SEQUENCE = ["ceo", "market", "product", "marketing", "finance", "investment", "synthesis"]
 
+    def initialize_pipeline_records(self, session_id: str) -> None:
+        """Pre-populate agent_outputs records for all 7 agents in pending status if they don't exist."""
+        try:
+            existing = agent_output_repository.get_session_agent_outputs(session_id)
+            existing_names = {r.get("agent_name") for r in existing}
+            for name in self.AGENTS_SEQUENCE:
+                if name not in existing_names:
+                    try:
+                        agent_output_repository.create_agent_output(
+                            AgentOutputCreate(
+                                session_id=session_id,
+                                agent_name=name,
+                                status="pending",
+                            )
+                        )
+                    except Exception as err:
+                        logger.warning("Could not pre-populate agent %s for session %s: %s", name, session_id, err)
+        except Exception as e:
+            logger.warning("Error pre-populating pipeline records for session %s: %s", session_id, e)
+
     async def run_full_pipeline(self, session_id: str) -> None:
         """
         Executes the 7-agent sequential intelligence pipeline:
         CEO -> Market -> Product -> Marketing -> Finance -> Investment -> Synthesis
         """
-        session = session_repository.get_session(session_id)
-        if not session:
-            logger.error("Cannot run orchestrator: Session %s not found.", session_id)
-            return
+        try:
+            session = session_repository.get_session(session_id)
+            if not session:
+                logger.error("Cannot run orchestrator: Session %s not found.", session_id)
+                return
 
-        session_repository.update_session_status(session_id, "processing")
-        execution_log_repository.log_event(
-            session_id,
-            "system",
-            "analysis_started",
-            "Multi-agent venture intelligence workflow started.",
-            {"started_at": datetime.now(timezone.utc).isoformat()}
-        )
+            session_repository.update_session_status(session_id, "processing")
+            execution_log_repository.log_event(
+                session_id,
+                "system",
+                "analysis_started",
+                "Multi-agent venture intelligence workflow started.",
+                {"started_at": datetime.now(timezone.utc).isoformat()}
+            )
 
-        startup_context = {
-            "startup_idea": session.get("startup_idea", ""),
-            "target_audience": session.get("target_audience", ""),
-            "industry": session.get("industry", ""),
-            "budget": session.get("budget", ""),
-            "timeline": session.get("timeline", ""),
-            "notes": session.get("notes") or "",
-        }
+            # Pre-initialize pipeline records for all 7 agents so UI immediately reflects pending status
+            self.initialize_pipeline_records(session_id)
 
-        agent_results: Dict[str, Any] = {}
-        all_sources: List[Dict[str, Any]] = []
-        any_failure = False
+            startup_context = {
+                "startup_idea": session.get("startup_idea", ""),
+                "target_audience": session.get("target_audience", ""),
+                "industry": session.get("industry", ""),
+                "budget": session.get("budget", ""),
+                "timeline": session.get("timeline", ""),
+                "notes": session.get("notes") or "",
+            }
 
-        # --- 1. CEO Agent ---
-        ceo_output = await self._run_agent_step(
-            agent_name="ceo",
-            agent_instance=None,
-            session_id=session_id,
-            startup_context=startup_context,
-            all_sources=all_sources,
-        )
-        if ceo_output:
-            agent_results["ceo"] = ceo_output
-        else:
-            any_failure = True
+            agent_results: Dict[str, Any] = {}
+            all_sources: List[Dict[str, Any]] = []
+            any_failure = False
 
-        # --- 2. Market Research Agent ---
-        market_context = self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo"))
-        market_output = await self._run_agent_step(
-            agent_name="market",
-            agent_instance=market_agent,
-            session_id=session_id,
-            startup_context=startup_context,
-            predecessor_context=market_context,
-            all_sources=all_sources,
-        )
-        if market_output:
-            agent_results["market"] = market_output
-        else:
-            any_failure = True
+            # --- 1. CEO Agent ---
+            ceo_output = await self._run_agent_step(
+                agent_name="ceo",
+                agent_instance=None,
+                session_id=session_id,
+                startup_context=startup_context,
+                all_sources=all_sources,
+            )
+            if ceo_output:
+                agent_results["ceo"] = ceo_output
+            else:
+                any_failure = True
 
-        # --- 3. Product Agent ---
-        product_context = self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo"))
-        product_output = await self._run_agent_step(
-            agent_name="product",
-            agent_instance=product_agent,
-            session_id=session_id,
-            startup_context=startup_context,
-            predecessor_context=product_context,
-            all_sources=all_sources,
-        )
-        if product_output:
-            agent_results["product"] = product_output
-        else:
-            any_failure = True
+            # --- 2. Market Research Agent ---
+            market_context = self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo"))
+            market_output = await self._run_agent_step(
+                agent_name="market",
+                agent_instance=market_agent,
+                session_id=session_id,
+                startup_context=startup_context,
+                predecessor_context=market_context,
+                all_sources=all_sources,
+            )
+            if market_output:
+                agent_results["market"] = market_output
+            else:
+                any_failure = True
 
-        # --- 4. Marketing Agent ---
-        mkt_predecessors = "\n".join(filter(None, [
-            self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo")),
-            self._format_predecessor_summary("Market Research", agent_results.get("market")),
-        ]))
-        marketing_output = await self._run_agent_step(
-            agent_name="marketing",
-            agent_instance=marketing_agent,
-            session_id=session_id,
-            startup_context=startup_context,
-            predecessor_context=mkt_predecessors,
-            all_sources=all_sources,
-        )
-        if marketing_output:
-            agent_results["marketing"] = marketing_output
-        else:
-            any_failure = True
+            # --- 3. Product Agent ---
+            product_context = self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo"))
+            product_output = await self._run_agent_step(
+                agent_name="product",
+                agent_instance=product_agent,
+                session_id=session_id,
+                startup_context=startup_context,
+                predecessor_context=product_context,
+                all_sources=all_sources,
+            )
+            if product_output:
+                agent_results["product"] = product_output
+            else:
+                any_failure = True
 
-        # --- 5. Finance Agent ---
-        fin_predecessors = "\n".join(filter(None, [
-            self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo")),
-            self._format_predecessor_summary("Market Research", agent_results.get("market")),
-            self._format_predecessor_summary("Product Strategy", agent_results.get("product")),
-        ]))
-        finance_output = await self._run_agent_step(
-            agent_name="finance",
-            agent_instance=finance_agent,
-            session_id=session_id,
-            startup_context=startup_context,
-            predecessor_context=fin_predecessors,
-            all_sources=all_sources,
-        )
-        if finance_output:
-            agent_results["finance"] = finance_output
-        else:
-            any_failure = True
+            # --- 4. Marketing Agent ---
+            mkt_predecessors = "\n".join(filter(None, [
+                self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo")),
+                self._format_predecessor_summary("Market Research", agent_results.get("market")),
+            ]))
+            marketing_output = await self._run_agent_step(
+                agent_name="marketing",
+                agent_instance=marketing_agent,
+                session_id=session_id,
+                startup_context=startup_context,
+                predecessor_context=mkt_predecessors,
+                all_sources=all_sources,
+            )
+            if marketing_output:
+                agent_results["marketing"] = marketing_output
+            else:
+                any_failure = True
 
-        # --- 6. Investment Agent (Actively challenges all findings) ---
-        inv_predecessors = "\n".join(filter(None, [
-            self._format_predecessor_summary("CEO Strategy", agent_results.get("ceo")),
-            self._format_predecessor_summary("Market Analysis", agent_results.get("market")),
-            self._format_predecessor_summary("Product Roadmap", agent_results.get("product")),
-            self._format_predecessor_summary("Marketing GTM", agent_results.get("marketing")),
-            self._format_predecessor_summary("Financial Model", agent_results.get("finance")),
-        ]))
-        investment_output = await self._run_agent_step(
-            agent_name="investment",
-            agent_instance=investment_agent,
-            session_id=session_id,
-            startup_context=startup_context,
-            predecessor_context=inv_predecessors,
-            all_sources=all_sources,
-        )
-        if investment_output:
-            agent_results["investment"] = investment_output
-        else:
-            any_failure = True
+            # --- 5. Finance Agent ---
+            fin_predecessors = "\n".join(filter(None, [
+                self._format_predecessor_summary("CEO & Strategy", agent_results.get("ceo")),
+                self._format_predecessor_summary("Market Research", agent_results.get("market")),
+                self._format_predecessor_summary("Product Strategy", agent_results.get("product")),
+            ]))
+            finance_output = await self._run_agent_step(
+                agent_name="finance",
+                agent_instance=finance_agent,
+                session_id=session_id,
+                startup_context=startup_context,
+                predecessor_context=fin_predecessors,
+                all_sources=all_sources,
+            )
+            if finance_output:
+                agent_results["finance"] = finance_output
+            else:
+                any_failure = True
 
-        # --- 7. Final Synthesis Agent ---
-        synthesis_predecessors = "\n".join(filter(None, [
-            self._format_full_output("CEO Strategy", agent_results.get("ceo")),
-            self._format_full_output("Market Analysis", agent_results.get("market")),
-            self._format_full_output("Product Strategy", agent_results.get("product")),
-            self._format_full_output("Marketing & GTM", agent_results.get("marketing")),
-            self._format_full_output("Financial Model", agent_results.get("finance")),
-            self._format_full_output("Investment Evaluation", agent_results.get("investment")),
-        ]))
-        synthesis_output = await self._run_agent_step(
-            agent_name="synthesis",
-            agent_instance=synthesis_agent,
-            session_id=session_id,
-            startup_context=startup_context,
-            predecessor_context=synthesis_predecessors,
-            all_sources=all_sources,
-        )
+            # --- 6. Investment Agent (Actively challenges all findings) ---
+            inv_predecessors = "\n".join(filter(None, [
+                self._format_predecessor_summary("CEO Strategy", agent_results.get("ceo")),
+                self._format_predecessor_summary("Market Analysis", agent_results.get("market")),
+                self._format_predecessor_summary("Product Roadmap", agent_results.get("product")),
+                self._format_predecessor_summary("Marketing GTM", agent_results.get("marketing")),
+                self._format_predecessor_summary("Financial Model", agent_results.get("finance")),
+            ]))
+            investment_output = await self._run_agent_step(
+                agent_name="investment",
+                agent_instance=investment_agent,
+                session_id=session_id,
+                startup_context=startup_context,
+                predecessor_context=inv_predecessors,
+                all_sources=all_sources,
+            )
+            if investment_output:
+                agent_results["investment"] = investment_output
+            else:
+                any_failure = True
 
-        # Finalize Session Status
-        final_status = "completed" if not any_failure and synthesis_output else "partially_completed"
-        if not synthesis_output and len(agent_results) == 0:
-            final_status = "failed"
+            # --- 7. Final Synthesis Agent ---
+            synthesis_predecessors = "\n".join(filter(None, [
+                self._format_full_output("CEO Strategy", agent_results.get("ceo")),
+                self._format_full_output("Market Analysis", agent_results.get("market")),
+                self._format_full_output("Product Strategy", agent_results.get("product")),
+                self._format_full_output("Marketing & GTM", agent_results.get("marketing")),
+                self._format_full_output("Financial Model", agent_results.get("finance")),
+                self._format_full_output("Investment Evaluation", agent_results.get("investment")),
+            ]))
+            synthesis_output = await self._run_agent_step(
+                agent_name="synthesis",
+                agent_instance=synthesis_agent,
+                session_id=session_id,
+                startup_context=startup_context,
+                predecessor_context=synthesis_predecessors,
+                all_sources=all_sources,
+            )
 
-        session_repository.update_session_status(session_id, final_status)
-        execution_log_repository.log_event(
-            session_id,
-            "system",
-            "analysis_completed",
-            f"Multi-agent analysis finished with status '{final_status}'.",
-            {"status": final_status, "completed_agents": list(agent_results.keys())},
-        )
-        logger.info("Session %s multi-agent pipeline completed with status: %s", session_id, final_status)
+            # Finalize Session Status
+            final_status = "completed" if not any_failure and synthesis_output else "partially_completed"
+            if not synthesis_output and len(agent_results) == 0:
+                final_status = "failed"
+
+            session_repository.update_session_status(session_id, final_status)
+            execution_log_repository.log_event(
+                session_id,
+                "system",
+                "analysis_completed",
+                f"Multi-agent analysis finished with status '{final_status}'.",
+                {"status": final_status, "completed_agents": list(agent_results.keys())},
+            )
+            logger.info("Session %s multi-agent pipeline completed with status: %s", session_id, final_status)
+
+        except Exception as e:
+            logger.exception("Fatal error in multi-agent pipeline for session %s: %s", session_id, str(e))
+            try:
+                session_repository.update_session_status(session_id, "failed")
+                execution_log_repository.log_event(
+                    session_id,
+                    "system",
+                    "analysis_failed",
+                    f"Multi-agent analysis encountered an error: {str(e)[:150]}",
+                    {"error": str(e)},
+                )
+            except Exception as recover_err:
+                logger.error("Failed to mark session as failed in recovery block: %s", recover_err)
 
     async def _run_agent_step(
         self,
@@ -221,18 +260,18 @@ class AgentOrchestrator:
         started_at = datetime.now(timezone.utc).isoformat()
         display_name = AGENT_DISPLAY_NAMES.get(agent_name, agent_name.capitalize())
 
-        execution_log_repository.log_event(
-            session_id, agent_name, "agent_started", f"{display_name} started execution.",
-            {"started_at": started_at}
-        )
-        agent_output_repository.update_by_session_and_agent(
-            session_id=session_id,
-            agent_name=agent_name,
-            status="processing",
-            started_at=started_at,
-        )
-
         try:
+            execution_log_repository.log_event(
+                session_id, agent_name, "agent_started", f"{display_name} started execution.",
+                {"started_at": started_at}
+            )
+            agent_output_repository.update_by_session_and_agent(
+                session_id=session_id,
+                agent_name=agent_name,
+                status="processing",
+                started_at=started_at,
+            )
+
             # 1. Agent-specific RAG retrieval
             if agent_instance:
                 query = agent_instance.build_retrieval_query(startup_context)
@@ -324,18 +363,24 @@ class AgentOrchestrator:
             duration_ms = int((t1 - t0) * 1000)
             error_msg = str(e)
             logger.error("Agent %s failed for session %s: %s", agent_name, session_id, error_msg)
-            execution_log_repository.log_event(
-                session_id, agent_name, "agent_failed", f"{display_name} encountered an error: {error_msg[:100]}",
-                {"duration_ms": duration_ms}
-            )
-            agent_output_repository.update_by_session_and_agent(
-                session_id=session_id,
-                agent_name=agent_name,
-                status="failed",
-                error_message=error_msg[:500],
-                duration_ms=duration_ms,
-                started_at=started_at,
-            )
+            try:
+                execution_log_repository.log_event(
+                    session_id, agent_name, "agent_failed", f"{display_name} encountered an error: {error_msg[:100]}",
+                    {"duration_ms": duration_ms}
+                )
+            except Exception:
+                pass
+            try:
+                agent_output_repository.update_by_session_and_agent(
+                    session_id=session_id,
+                    agent_name=agent_name,
+                    status="failed",
+                    error_message=error_msg[:500],
+                    duration_ms=duration_ms,
+                    started_at=started_at,
+                )
+            except Exception as update_err:
+                logger.error("Failed to record failed status for agent %s: %s", agent_name, update_err)
             return None
 
     def _format_predecessor_summary(self, role: str, output: Optional[Dict[str, Any]]) -> str:
