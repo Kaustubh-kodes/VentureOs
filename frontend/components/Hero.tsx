@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -144,9 +144,10 @@ export default function Hero() {
                 })}
               </div>
 
-              <div className="mt-5 pt-4 border-t border-vo-border">
+              <div className="mt-5 pt-4 border-t border-vo-border flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <p className="text-vo-muted text-xs">
-                  <span className="text-vo-red">Phase 3</span> connects live Gemini agents
+                  <span className="text-vo-white font-semibold">7 Specialized Agents</span> active &amp; grounded in founder documents
                 </p>
               </div>
             </div>

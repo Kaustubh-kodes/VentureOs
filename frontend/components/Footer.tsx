@@ -44,8 +44,11 @@ export default function Footer() {
           {/* Status */}
           <div>
             <p className="text-vo-white text-xs font-bold tracking-widest uppercase mb-4">Status</p>
-            <p className="text-vo-muted text-sm">Phase 1 — Foundation</p>
-            <p className="text-vo-muted text-xs mt-1">Phase 3 will add AI agents</p>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-vo-white text-sm font-semibold">Production Ready</p>
+            </div>
+            <p className="text-vo-muted text-xs">7 Specialized Agents &bull; pgvector RAG Active</p>
           </div>
         </div>
 

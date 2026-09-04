@@ -255,7 +255,7 @@ export default function AnalyseStrategyRoom() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-2 h-2 rounded-full bg-vo-red" />
                 <p className="text-vo-red text-xs font-black tracking-widest uppercase">
-                  STRATEGY ROOM · PHASE 7
+                  STRATEGY ROOM · MULTI-AGENT INTELLIGENCE
                 </p>
               </div>
               <h1 className="text-4xl sm:text-5xl font-black leading-none tracking-tight text-vo-white mb-6 uppercase">
